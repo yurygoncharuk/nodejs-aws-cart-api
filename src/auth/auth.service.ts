@@ -2,13 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/services/users.service';
 import { User } from '../users/models';
-import { contentSecurityPolicy } from 'helmet';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
-    private jwtService: JwtService
+    private jwtService: JwtService,
   ) {}
 
   validateUser(name: string, password: string): any {
@@ -18,7 +17,7 @@ export class AuthService {
       return user;
     }
 
-    return this.usersService.createOne({ name, password })
+    return this.usersService.createOne({ name, password });
   }
 
   login(user: User, type) {
@@ -26,8 +25,8 @@ export class AuthService {
       jwt: this.loginJWT,
       basic: this.loginBasic,
       default: this.loginJWT,
-    }
-    const login = LOGIN_MAP[ type ]
+    };
+    const login = LOGIN_MAP[type];
 
     return login ? login(user) : LOGIN_MAP.default(user);
   }
@@ -57,7 +56,4 @@ export class AuthService {
       access_token: encodeUserToken(user),
     };
   }
-
-
-
 }

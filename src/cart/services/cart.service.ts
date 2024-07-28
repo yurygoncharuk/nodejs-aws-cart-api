@@ -1,55 +1,64 @@
 import { Injectable } from '@nestjs/common';
 
+import { Pool } from 'pg';
 import { v4 } from 'uuid';
+import { Cart, CartStatuses } from '../models';
 
-import { Cart } from '../models';
+const pool = new Pool({
+  host: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT, 10),
+  database: process.env.DB_NAME,
+  user: process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+});
 
 @Injectable()
 export class CartService {
   private userCarts: Record<string, Cart> = {};
 
-  findByUserId(userId: string): Cart {
-    return this.userCarts[ userId ];
+  async findByUserId(userId: string) {
+    const { rows } = await pool.query(
+      'SELECT * FROM carts WHERE user_id = $1',
+      [userId],
+    );
+    return rows[0];
   }
 
-  createByUserId(userId: string) {
+  async createByUserId(userId: string) {
     const id = v4();
-    const userCart = {
-      id,
-      items: [],
-    };
+    const createdAt = new Date().toISOString();
+    const status = CartStatuses.OPEN;
 
-    this.userCarts[ userId ] = userCart;
+    const { rows } = await pool.query(
+      'INSERT INTO carts(id, items, user_id, created_at, updated_at, status) VALUES($1, $2, $3, $4, $5, $6) RETURNING *',
+      [id, JSON.stringify([]), userId, createdAt, createdAt, status],
+    );
 
-    return userCart;
+    return rows[0];
   }
 
-  findOrCreateByUserId(userId: string): Cart {
-    const userCart = this.findByUserId(userId);
+  async findOrCreateByUserId(userId: string) {
+    const cart = await this.findByUserId(userId);
 
-    if (userCart) {
-      return userCart;
+    if (cart) {
+      return cart;
     }
 
     return this.createByUserId(userId);
   }
 
-  updateByUserId(userId: string, { items }: Cart): Cart {
-    const { id, ...rest } = this.findOrCreateByUserId(userId);
+  async updateByUserId(userId: string, { items }) {
+    const cart = await this.findOrCreateByUserId(userId);
 
-    const updatedCart = {
-      id,
-      ...rest,
-      items: [ ...items ],
-    }
+    const { rows } = await pool.query(
+      'UPDATE carts SET items = $1, updated_at = $2 WHERE id = $3 RETURNING *',
+      [JSON.stringify(items), new Date().toISOString(), cart.id],
+    );
 
-    this.userCarts[ userId ] = { ...updatedCart };
-
-    return { ...updatedCart };
+    return rows[0];
   }
 
-  removeByUserId(userId): void {
-    this.userCarts[ userId ] = null;
+  removeByUserId(userId: string): void {
+    this.userCarts[userId] = null;
   }
-
 }
