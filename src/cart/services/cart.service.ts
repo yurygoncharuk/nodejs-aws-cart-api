@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { Pool } from 'pg';
 import { v4 } from 'uuid';
 import { Cart, CartStatuses } from '../models';
+import { count } from 'console';
 
 const pool = new Pool({
   host: process.env.DB_HOST,
@@ -76,18 +77,32 @@ export class CartService {
     return this.createByUserId(userId);
   }
 
-  async updateByUserId(userId: string, { items }) {
+  async updateByUserId(userId: string, { product, count }) {
     const cart = await this.findOrCreateByUserId(userId);
-
     const { rows } = await pool.query(
-      'UPDATE carts SET items = $1, updated_at = $2 WHERE id = $3 RETURNING *',
-      [JSON.stringify(items), new Date().toISOString(), cart.id],
+      'INSERT INTO cart_items(cart_id, product_id, count, price) VALUES($1, $2, $4, $3) ON CONFLICT (cart_id, product_id) DO UPDATE SET count = $4 RETURNING *',
+      //'UPDATE cart_items SET count = $1 WHERE cart_id = $2 and product_id = $3 RETURNING *',
+      [cart.id, product.id, product.price, count],
     );
 
-    return rows[0];
+    cart.items = rows
+    if (cart.items) {
+      if (count === 0) {
+        await pool.query(
+          'DELETE FROM cart_items WHERE cart_id = $1 and product_id = $2',
+          [cart.id, product.id],
+        );
+        cart.items = []
+      }
+    }
+    return cart;
   }
 
-  removeByUserId(userId: string): void {
-    this.userCarts[userId] = null;
+  async removeByUserId(userId: string): Promise<void> {
+    console.log('removeByUserId', userId)
+    // await pool.query(
+    //   'DELETE FROM carts WHERE user_id = $1',
+    //   [userId],
+    // );
   }
 }

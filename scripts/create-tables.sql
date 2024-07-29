@@ -25,7 +25,8 @@ CREATE TABLE cart_items (
   cart_id UUID NOT NULL REFERENCES carts(id) ON DELETE CASCADE,
   product_id UUID NOT NULL,
   count INT NOT NULL,
-  price NUMERIC(10, 2) NOT NULL
+  price NUMERIC(10, 2) NOT NULL,
+  UNIQUE (cart_id, product_id)
 );
 
 -- Create orders table
