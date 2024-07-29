@@ -10,6 +10,26 @@ const pool = new Pool({
   database: process.env.DB_NAME,
   user: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
+  ssl: {
+    rejectUnauthorized: false, // Allow self-signed certificates
+  },
+  sslmode: 'require',
+});
+
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle client', err);
+  process.exit(-1);
+});
+
+// Test the connection
+pool.query('SELECT NOW()', (err, res) => {
+  if (err) {
+    console.error('Error executing query', err.stack);
+    process.exit(-1);
+  } else {
+    console.log('Connected to the database successfully!');
+    console.log('Query result:', res.rows[0]);
+  }
 });
 
 @Injectable()
@@ -30,14 +50,15 @@ export class CartService {
     const status = CartStatuses.OPEN;
 
     const { rows } = await pool.query(
-      'INSERT INTO carts(id, items, user_id, created_at, updated_at, status) VALUES($1, $2, $3, $4, $5, $6) RETURNING *',
-      [id, JSON.stringify([]), userId, createdAt, createdAt, status],
+      'INSERT INTO carts(id, user_id, created_at, updated_at, status) VALUES($1, $2, $3, $4, $5) RETURNING *',
+      [id, userId, createdAt, createdAt, status],
     );
 
     return rows[0];
   }
 
   async findOrCreateByUserId(userId: string) {
+    console.log('findOrCreateByUserId', userId);
     const cart = await this.findByUserId(userId);
 
     if (cart) {

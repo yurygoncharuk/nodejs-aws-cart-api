@@ -2,9 +2,9 @@ import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import { Construct } from 'constructs';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
-import * as path from 'path';
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -89,12 +89,32 @@ export class DeployStack extends cdk.Stack {
 
     rdsInstance.grantConnect(lambdaFunction, process.env.DB_USERNAME!);
 
-    const function_url = lambdaFunction.addFunctionUrl({
-      authType: lambda.FunctionUrlAuthType.NONE,
-      cors: {
-        allowedOrigins: ['*'],
+    const api = new apigateway.RestApi(this, 'CartAPI', {
+      restApiName: 'Cart API',
+      deployOptions: {
+        stageName: 'prod',
+      },
+      defaultCorsPreflightOptions: {
+        allowHeaders: apigateway.Cors.DEFAULT_HEADERS,
+        allowMethods: apigateway.Cors.ALL_METHODS,
+        allowOrigins: apigateway.Cors.ALL_ORIGINS,
       },
     });
-    new cdk.CfnOutput(this, 'LambdaFunctionUrl', { value: function_url.url });
+
+    api.root.addProxy({
+      anyMethod: true,
+      defaultIntegration: new apigateway.LambdaIntegration(lambdaFunction),
+    });
+
+    new cdk.CfnOutput(this, 'API_URL', {
+      value: api.url,
+    })
+    // const function_url = lambdaFunction.addFunctionUrl({
+    //   authType: lambda.FunctionUrlAuthType.NONE,
+    //   cors: {
+    //     allowedOrigins: ['*'],
+    //   },
+    // });
+    // new cdk.CfnOutput(this, 'LambdaFunctionUrl', { value: function_url.url });
   }
 }

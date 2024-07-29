@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import serverlessExpress from '@codegenie/serverless-express';
-import { Context, Handler } from 'aws-lambda';
+import { Callback, Context, Handler } from 'aws-lambda';
 import express from 'express';
 
 import { AppModule } from './app.module';
@@ -16,7 +16,9 @@ async function bootstrap() {
       new ExpressAdapter(expressApp),
     );
 
-    nestApp.enableCors();
+    nestApp.enableCors({
+      origin: (req, callback) => callback(null, true),
+    });
 
     await nestApp.init();
 
@@ -26,7 +28,8 @@ async function bootstrap() {
   return cachedServer;
 }
 
-const handler = async (event: any, context: Context, callback: any) => {
+const handler = async (event: any, context: Context, callback: Callback) => {
+  console.log(`Cart API requested with event: ${JSON.stringify(event)}`);
   const server = await bootstrap();
   return server(event, context, callback);
 };
