@@ -31,7 +31,8 @@ export class CartController {
     const cart = await this.cartService.findOrCreateByUserId(
       getUserIdFromRequest(req),
     );
-
+    cart.items = await this.cartService.findItemsByCartId(cart.id);
+    console.log('findUserCart cart', cart);
     return {
       statusCode: HttpStatus.OK,
       message: 'OK',
@@ -78,6 +79,8 @@ export class CartController {
     const userId = getUserIdFromRequest(req);
     const cart = await this.cartService.findByUserId(userId);
 
+    console.log('checkout cart', cart);
+
     if (!(cart && cart.items.length)) {
       const statusCode = HttpStatus.BAD_REQUEST;
       req.statusCode = statusCode;
@@ -97,6 +100,7 @@ export class CartController {
       items,
       total,
     });
+    console.log('checkout order', order);
     this.cartService.removeByUserId(userId);
 
     return {

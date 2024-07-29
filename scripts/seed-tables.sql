@@ -22,9 +22,9 @@ CREATE TABLE products (
 -- Seed product ids from DynamoDB
 INSERT INTO products (id, price)
 VALUES
-  ('66977be4-bfb1-4f1e-a16f-93c5c60fb3ec', 11),
-  ('e2f468a3-c10a-430e-98c6-9ebd2cc6aa57', 4),
-  ('9dd784d2-93fc-4adc-b4e6-4d6303cfce3e', 5.2);
+  ('228d04ed-9502-46d5-9124-eefd3b913c1e', 12.22),
+  ('ba5163d2-c28d-4e45-b499-df55514cfbb5', 8.43),
+  ('da7b75af-555f-415a-8a0a-8c6fa61d99d3', 12.99);
 
 
 -- Seed cart_items

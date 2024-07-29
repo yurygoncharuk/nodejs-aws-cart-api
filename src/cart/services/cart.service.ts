@@ -44,6 +44,14 @@ export class CartService {
     return rows[0];
   }
 
+  async findItemsByCartId(cartId: string) {
+    const { rows } = await pool.query(
+      'SELECT * FROM cart_items WHERE cart_id = $1',
+      [cartId],
+    );
+    return rows;
+  }
+
   async createByUserId(userId: string) {
     const id = v4();
     const createdAt = new Date().toISOString();
@@ -54,11 +62,11 @@ export class CartService {
       [id, userId, createdAt, createdAt, status],
     );
 
+    console.log('createByUserId rows', rows)
     return rows[0];
   }
 
   async findOrCreateByUserId(userId: string) {
-    console.log('findOrCreateByUserId', userId);
     const cart = await this.findByUserId(userId);
 
     if (cart) {

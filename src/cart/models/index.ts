@@ -11,8 +11,10 @@ export type Product = {
 };
 
 export type CartItem = {
-  product: Product;
+  cart_id: string;
+  product_id: string;
   count: number;
+  price: number;
 };
 
 export type Cart = {
