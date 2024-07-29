@@ -22,11 +22,6 @@ export class DeployStack extends cdk.Stack {
           name: 'Public',
           subnetType: ec2.SubnetType.PUBLIC,
         },
-        {
-          cidrMask: 24,
-          name: 'Private',
-          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
-        },
       ],
     });
 
@@ -43,7 +38,6 @@ export class DeployStack extends cdk.Stack {
     );
 
     // Create RDS PostgreSQL
-    const db_name = 'CartDatabase'
 
     const rdsInstance = new rds.DatabaseInstance(this, 'CartRDS', {
       engine: rds.DatabaseInstanceEngine.postgres({
@@ -54,15 +48,18 @@ export class DeployStack extends cdk.Stack {
         ec2.InstanceSize.MICRO
       ),
       vpc,
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PUBLIC,
+      },
       securityGroups: [securityGroup],
       multiAz: false,
       allocatedStorage: 20,
-      storageType: rds.StorageType.GP3,
+      storageType: rds.StorageType.GP2,
       cloudwatchLogsExports: ['postgresql'],
       deleteAutomatedBackups: true,
       backupRetention: cdk.Duration.days(0),
       deletionProtection: false,
-      databaseName: db_name,
+      databaseName: process.env.DB_NAME!,
       publiclyAccessible: true,
       credentials: rds.Credentials.fromPassword(
         process.env.DB_USERNAME!,
@@ -86,8 +83,6 @@ export class DeployStack extends cdk.Stack {
         DB_USERNAME: process.env.DB_USERNAME!,
         DB_PASSWORD: process.env.DB_PASSWORD!,
       },
-      vpc,
-      securityGroups: [securityGroup],
       timeout: cdk.Duration.seconds(30),
       memorySize: 1024,
     });
