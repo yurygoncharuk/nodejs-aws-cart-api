@@ -92,13 +92,6 @@ export class OrderService {
   }
 
   async update(orderId, data) {
-    // const order = await this.findById(orderId);
-    // console.log('orders update', order)
-
-    // if (!order) {
-    //   throw new Error('Order does not exist.');
-    // }
-
     const { rows } = await pool.query(
       'UPDATE orders SET status = $1, comments = $2 WHERE id = $3 RETURNING *',
       [data.status, data.comments, orderId],
@@ -108,13 +101,32 @@ export class OrderService {
     return rows[0]
   }
 
-  async delete(orderId: string): Promise<Order> {
-    console.log('orders delete', orderId)
-    const { rows } = await pool.query(
-      'DELETE FROM orders WHERE id = $1 RETURNING *',
-      [orderId],
-    );
-    console.log('Delete successful:', rows);
-    return rows[0];
+  async delete(orderId: string, cartId: string): Promise<Order> {
+    console.log('orders delete', orderId, cartId)
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const { rows } = await pool.query(
+        'DELETE FROM orders WHERE id = $1 RETURNING *',
+        [orderId],
+      );
+      await pool.query(
+        'DELETE FROM cart_items WHERE cart_id = $1',
+        [cartId],
+      );
+      await pool.query(
+        'DELETE FROM carts WHERE id = $1',
+        [cartId],
+      );
+      await client.query('COMMIT');
+
+      console.log('Transaction delete completed successfully:', rows);
+      return rows[0];
+    } catch (error) {
+      await client.query('ROLLBACK');
+      console.error('Transaction delete failed. Rolled back.', error);
+    } finally {
+      client.release();
+    }
   }
 }

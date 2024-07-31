@@ -38,11 +38,6 @@ export class CartService {
   private userCarts: Record<string, Cart> = {};
 
   async findByUserId(userId: string) {
-    // const { rows } = await pool.query(
-    //   'SELECT * FROM carts WHERE user_id = $1',
-    //   [userId],
-    // );
-
     try {
       const { rows } = await pool.query(`
         SELECT
@@ -106,7 +101,7 @@ export class CartService {
     if (cart) {
       return cart;
     }
-
+    console.log('findOrCreateByUserId createByUserId')
     return this.createByUserId(userId);
   }
 
@@ -114,7 +109,6 @@ export class CartService {
     const cart = await this.findOrCreateByUserId(userId);
     const { rows } = await pool.query(
       'INSERT INTO cart_items(cart_id, product_id, count, price) VALUES($1, $2, $4, $3) ON CONFLICT (cart_id, product_id) DO UPDATE SET count = $4 RETURNING *',
-      //'UPDATE cart_items SET count = $1 WHERE cart_id = $2 and product_id = $3 RETURNING *',
       [cart.id, product.id, product.price, count],
     );
 

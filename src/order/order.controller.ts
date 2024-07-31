@@ -58,7 +58,8 @@ import {
     @UseGuards(BasicAuthGuard)
     @Delete('/:id')
     async delete(@Req() req: AppRequest) {
-      const order = await this.orderService.delete(req.params.id);
+      const cartId = (await this.orderService.findById(req.params.id)).cart_id;
+      const order = await this.orderService.delete(req.params.id, cartId);
   
       return {
         statusCode: HttpStatus.OK,

@@ -3,7 +3,7 @@ import { CartItem } from '../../cart/models';
 export type Order = {
   id?: string;
   userId: string;
-  cartId: string;
+  cart_id: string;
   items: CartItem[];
   payment: {
     type: string;
