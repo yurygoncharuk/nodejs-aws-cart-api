@@ -79,6 +79,7 @@ export class CartController {
   async checkout(@Req() req: AppRequest, @Body() body) {
     const userId = getUserIdFromRequest(req);
     const cart = await this.cartService.findByUserId(userId);
+    cart.items = await this.cartService.findItemsByCartId(cart.id);
 
     console.log('checkout cart', cart);
 
@@ -94,15 +95,16 @@ export class CartController {
 
     const { id: cartId, items } = cart;
     const total = calculateCartTotal(cart);
-    const order = this.orderService.create({
+    const order = await this.orderService.create({
       ...body, // TODO: validate and pick only necessary data
       userId,
       cartId,
-      items,
       total,
     });
-    console.log('checkout order', order);
-    this.cartService.removeByUserId(userId);
+    const productIds = items.map(item => item.product_id);
+    //this.cartService.removeItemsByCartID(cartId, productIds);
+    
+    
 
     return {
       statusCode: HttpStatus.OK,

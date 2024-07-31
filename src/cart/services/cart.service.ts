@@ -88,21 +88,33 @@ export class CartService {
     cart.items = rows
     if (cart.items) {
       if (count === 0) {
-        await pool.query(
-          'DELETE FROM cart_items WHERE cart_id = $1 and product_id = $2',
-          [cart.id, product.id],
-        );
+        await this.removeItemsByCartID(cart.id, [ product.id ])
         cart.items = []
       }
     }
     return cart;
   }
 
+  async removeItemsByCartID(cartId: string, productIds) {
+
+    for (const productId of productIds) {
+      try {
+          const res = await pool.query(
+              'DELETE FROM cart_items WHERE cart_id = $1 and product_id = $2',
+              [cartId, productId]
+          );
+          console.log('Item was removed successfully!');
+      } catch (err) {
+          console.error('Error executing query', err.stack);
+      }
+    } 
+  }
+
   async removeByUserId(userId: string): Promise<void> {
     console.log('removeByUserId', userId)
-    // await pool.query(
-    //   'DELETE FROM carts WHERE user_id = $1',
-    //   [userId],
-    // );
+    await pool.query(
+      'DELETE FROM carts WHERE user_id = $1',
+      [userId],
+    );
   }
 }

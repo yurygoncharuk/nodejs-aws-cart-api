@@ -37,6 +37,6 @@ CREATE TABLE orders (
   payment JSON,
   delivery JSON,
   comments TEXT,
-  status VARCHAR(10) DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'APPROVED', 'CONFIRMED', 'SENT', 'COMPLETED', 'CANCELLED')),
+  status VARCHAR(10) DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'APPROVED', 'CONFIRMED', 'SENT', 'COMPLETED', 'CANCELLED', 'ORDERED')),
   total NUMERIC(10, 2) NOT NULL
 );
