@@ -38,11 +38,44 @@ export class CartService {
   private userCarts: Record<string, Cart> = {};
 
   async findByUserId(userId: string) {
-    const { rows } = await pool.query(
-      'SELECT * FROM carts WHERE user_id = $1',
-      [userId],
-    );
-    return rows[0];
+    // const { rows } = await pool.query(
+    //   'SELECT * FROM carts WHERE user_id = $1',
+    //   [userId],
+    // );
+
+    try {
+      const { rows } = await pool.query(`
+        SELECT
+            c.*,
+            COALESCE(
+                JSON_AGG(
+                    CASE
+                        WHEN ci.cart_id IS NOT NULL THEN
+                            JSON_BUILD_OBJECT(
+                                'cart_id', ci.cart_id,
+                                'product_id', ci.product_id,
+                                'count', ci.count,
+                                'price', ci.price
+                            )
+                    END
+                ) FILTER (WHERE ci.cart_id IS NOT NULL),
+                '[]'
+            ) AS items
+        FROM
+            carts c
+        LEFT JOIN
+            cart_items ci ON c.id = ci.cart_id
+        WHERE
+            c.user_id = $1
+            AND c.status = 'OPEN'
+        GROUP BY
+            c.id;
+      `, [userId]);
+      console.log('findByUserId rows', rows)
+      return rows[0];
+    } catch (error) {
+      console.error('Error executing findByUserId operation:', error);
+    }
   }
 
   async findItemsByCartId(cartId: string) {

@@ -42,7 +42,6 @@ export class OrderService {
 
   async findById(orderId: string): Promise<Order> {
     try {
-      console.log('findById orderId', orderId)
       const { rows } = await pool.query(`
         SELECT
             o.* ,
@@ -69,15 +68,26 @@ export class OrderService {
   async create(data: any) {
     const id = v4();
 
+    const client = await pool.connect();
     try {
-      const { rows } = await pool.query(
+      await client.query('BEGIN');
+      const { rows } = await client.query(
         'INSERT INTO orders(id, user_id, cart_id, payment, delivery, comments, status, total) VALUES($1, $2, $3, $4, $5, $6, $7::character varying, $8) RETURNING *',
         [id, data.userId, data.cartId, '{}', data.address, data.address.comment, 'OPEN', data.total],
       );
-      console.log('Insert successful:', rows);
+      await client.query(
+        'UPDATE carts SET status = $1, updated_at = $2 WHERE id = $3 RETURNING *',
+        ["ORDERED", new Date().toISOString(), data.cartId],
+      );
+      await client.query('COMMIT');
+
+      console.log('Transaction completed successfully:', rows);
       return rows[0];
     } catch (error) {
-      console.error('Error executing insert operation:', error);
+      await client.query('ROLLBACK');
+      console.error('Transaction failed. Rolled back.', error);
+    } finally {
+      client.release();
     }
   }
 

@@ -31,7 +31,7 @@ export class CartController {
     const cart = await this.cartService.findOrCreateByUserId(
       getUserIdFromRequest(req),
     );
-    cart.items = await this.cartService.findItemsByCartId(cart.id);
+    //cart.items = await this.cartService.findItemsByCartId(cart.id);
     console.log('findUserCart cart', cart);
     return {
       statusCode: HttpStatus.OK,
@@ -79,7 +79,7 @@ export class CartController {
   async checkout(@Req() req: AppRequest, @Body() body) {
     const userId = getUserIdFromRequest(req);
     const cart = await this.cartService.findByUserId(userId);
-    cart.items = await this.cartService.findItemsByCartId(cart.id);
+    //cart.items = await this.cartService.findItemsByCartId(cart.id);
 
     console.log('checkout cart', cart);
 
@@ -101,8 +101,8 @@ export class CartController {
       cartId,
       total,
     });
-    const productIds = items.map(item => item.product_id);
-    //this.cartService.removeItemsByCartID(cartId, productIds);
+    // const productIds = items.map(item => item.product_id);
+    // this.cartService.removeItemsByCartID(cartId, productIds);
     
     
 
