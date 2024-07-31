@@ -90,7 +90,7 @@ export class CartService {
       'INSERT INTO carts(id, user_id, created_at, updated_at, status) VALUES($1, $2, $3, $4, $5) RETURNING *',
       [id, userId, createdAt, createdAt, status],
     );
-
+    rows[0].items = []
     console.log('createByUserId rows', rows)
     return rows[0];
   }
@@ -102,7 +102,7 @@ export class CartService {
       return cart;
     }
     console.log('findOrCreateByUserId createByUserId')
-    return this.createByUserId(userId);
+    return await this.createByUserId(userId);
   }
 
   async updateByUserId(userId: string, { product, count }) {

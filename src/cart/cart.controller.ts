@@ -28,6 +28,7 @@ export class CartController {
   @UseGuards(BasicAuthGuard)
   @Get()
   async findUserCart(@Req() req: AppRequest) {
+    console.log('findUserCart');
     const cart = await this.cartService.findOrCreateByUserId(
       getUserIdFromRequest(req),
     );
@@ -65,6 +66,7 @@ export class CartController {
   @UseGuards(BasicAuthGuard)
   @Delete()
   clearUserCart(@Req() req: AppRequest) {
+    console.log('clearUserCart');
     this.cartService.removeByUserId(getUserIdFromRequest(req));
 
     return {
@@ -77,6 +79,7 @@ export class CartController {
   @UseGuards(BasicAuthGuard)
   @Post('checkout')
   async checkout(@Req() req: AppRequest, @Body() body) {
+    console.log('checkout body', body);
     const userId = getUserIdFromRequest(req);
     const cart = await this.cartService.findByUserId(userId);
     //cart.items = await this.cartService.findItemsByCartId(cart.id);
