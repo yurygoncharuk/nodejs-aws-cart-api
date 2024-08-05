@@ -11,8 +11,7 @@ COPY . .
 RUN npm run build:image
 
 # Final stage
-FROM node:20
-COPY --from=build /usr/src/app/node_modules ./node_modules
+FROM node:20-alpine
 COPY --from=build /usr/src/app/dist ./dist
 EXPOSE 4000
 CMD ["node", "dist/main"]
