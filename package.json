@@ -8,7 +8,8 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
-    "build:cdk": "nest build --webpack --webpackPath webpack.config.js",
+    "build:image": "nest build --webpack --webpackPath webpack.image.js",
+    "build:cdk": "nest build --webpack --webpackPath webpack.cdk.js",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",

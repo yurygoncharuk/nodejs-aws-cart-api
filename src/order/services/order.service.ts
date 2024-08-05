@@ -2,19 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { v4 } from 'uuid';
 
 import { Order } from '../models';
-import { Pool } from 'pg';
-
-const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT, 10),
-  database: process.env.DB_NAME,
-  user: process.env.DB_USERNAME,
-  password: process.env.DB_PASSWORD,
-  ssl: {
-    rejectUnauthorized: false, // Allow self-signed certificates
-  },
-  sslmode: 'require',
-});
+import pool from '../../db';
 
 @Injectable()
 export class OrderService {
