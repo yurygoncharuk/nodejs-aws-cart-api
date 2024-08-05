@@ -1,0 +1,27 @@
+# Dependencies
+/node_modules
+
+# App build
+/dist
+
+# AWS CDK files
+deploy
+webpack.cdk.js
+src/lambda.ts
+
+# Tests and sql scripts which aren't used in the app runtime
+scripts
+test
+
+# envs, readme and different configs which aren't used in the app runtime
+.env*
+README.md
+.gitignore
+.prettierrc
+.eslintrc.js
+Dockerfile
+.dockerignore
+.git
+
+# AWS Elastic Beanstalk config is only needed for cloud delivery
+.elasticbeanstalk/*

@@ -7,7 +7,7 @@ import { Construct } from 'constructs';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as dotenv from "dotenv";
 
-dotenv.config();
+dotenv.config({ path: __dirname+'../.env' });
 
 export class DeployStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -60,7 +60,7 @@ export class DeployStack extends cdk.Stack {
       backupRetention: cdk.Duration.days(0),
       deletionProtection: false,
       databaseName: process.env.DB_NAME!,
-      publiclyAccessible: true,
+      publiclyAccessible: false,
       credentials: rds.Credentials.fromPassword(
         process.env.DB_USERNAME!,
         cdk.SecretValue.unsafePlainText(process.env.DB_PASSWORD!)
@@ -85,6 +85,12 @@ export class DeployStack extends cdk.Stack {
       },
       timeout: cdk.Duration.seconds(30),
       memorySize: 1024,
+      vpc: vpc,
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PUBLIC,
+      },
+      securityGroups: [securityGroup],
+      allowPublicSubnet: true,
     });
 
     rdsInstance.grantConnect(lambdaFunction, process.env.DB_USERNAME!);
