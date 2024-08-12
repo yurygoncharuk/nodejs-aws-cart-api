@@ -24,4 +24,4 @@ Dockerfile
 .git
 
 # AWS Elastic Beanstalk config is only needed for cloud delivery
-.elasticbeanstalk/*
+.elasticbeanstalk
